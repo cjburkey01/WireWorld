@@ -1,8 +1,10 @@
-package com.cjburkey.wireworld.world;
+package com.cjburkey.jautomata.world;
 
+import com.cjburkey.wireworld.Util;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Optional;
 import org.joml.Vector2i;
+import org.joml.Vector3dc;
 
 /**
  * Created by CJ Burkey on 2018/11/25
@@ -10,15 +12,17 @@ import org.joml.Vector2i;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class World {
     
+    public static final byte CHUNK_SIZE = 32;
+    
     private final Object2ObjectOpenHashMap<Vector2i, Chunk> chunks = new Object2ObjectOpenHashMap<>();
     
-    public void setTile(Vector2i worldPos, Chunk.TileType tileType) {
+    public void setTile(Vector2i worldPos, byte tileType) {
         Vector2i containing = getContainingChunk(worldPos);
         if (!hasChunk(containing)) addChunk(new Chunk(containing));
         
         // This should always work, but IDEA doesn't want me doing an "unchecked get() call" on Optional instances
         getChunk(containing).ifPresent(
-                chunk -> chunk.set((byte) (worldPos.x % Chunk.CHUNK_SIZE), (byte) (worldPos.y % Chunk.CHUNK_SIZE), tileType));
+                chunk -> chunk.set(Util.mod((byte) worldPos.x, CHUNK_SIZE), Util.mod((byte) worldPos.y, CHUNK_SIZE), tileType));
     }
     
     public Optional<Chunk> getChunk(Vector2i chunkPos) {
@@ -49,12 +53,21 @@ public class World {
         for (Chunk chunk : chunks.values()) chunk.swapBuffers();
     }
     
+    public void render(IRenderFunction renderFunction) {
+        for (Chunk chunk : chunks.values()) chunk.render(renderFunction);
+    }
+    
     public Vector2i getContainingChunk(Vector2i worldPos) {
-        return new Vector2i((int) Math.floor((float) worldPos.x / Chunk.CHUNK_SIZE), (int) Math.floor((float) worldPos.y / Chunk.CHUNK_SIZE));
+        return new Vector2i((int) Math.floor((float) worldPos.x / CHUNK_SIZE), (int) Math.floor((float) worldPos.y / CHUNK_SIZE));
     }
     
     public boolean hasChunk(Vector2i chunkPos) {
         return chunks.containsKey(chunkPos);
+    }
+    
+    @FunctionalInterface
+    public interface IRenderFunction {
+        void render(int x, int y, Vector3dc color);
     }
     
 }

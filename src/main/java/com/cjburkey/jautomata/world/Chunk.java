@@ -1,10 +1,11 @@
-package com.cjburkey.wireworld.world;
+package com.cjburkey.jautomata.world;
 
 import com.cjburkey.wireworld.Render;
 import com.cjburkey.wireworld.Util;
-import java.util.Optional;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
+
+import static com.cjburkey.jautomata.world.World.*;
 
 /**
  * Created by CJ Burkey on 2018/11/25
@@ -12,7 +13,6 @@ import org.joml.Vector3d;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Chunk {
     
-    public static final byte CHUNK_SIZE = 32;
     public static final int AREA = CHUNK_SIZE * CHUNK_SIZE;
     
     private static final Vector3d COLOR_ELECTRON_HEAD = new Vector3d(0.3d, 0.3d, 1.0d);
@@ -36,14 +36,13 @@ public class Chunk {
         this.chunkPos.set(chunkPos);
     }
     
-    public void set(byte x, byte y, TileType type) {
+    public void set(byte x, byte y, byte type) {
         int at = getIndex(x, y);
-        if (at >= 0) front[at] = type.type;
+        if (at >= 0) front[at] = type;
     }
     
-    public void fill(byte x1, byte y1, byte x2, byte y2, TileType type) {
+    public void fill(byte x1, byte y1, byte x2, byte y2, byte type) {
         if (valid(x1, y1) && valid(x2, y2)) {
-            byte rtype = type.type;
             byte sx = Util.min(x1, x2);
             byte sy = Util.min(y1, y2);
             byte fx = Util.max(x1, x2);
@@ -51,7 +50,7 @@ public class Chunk {
             int index = getIndexRaw(sx, sy);
             for (byte y = sy; y <= fy; y ++) {
                 for (byte x = sy; x <= fx; x ++) {
-                    front[index] = rtype;
+                    front[index] = type;
                     index ++;
                 }
                 index += CHUNK_SIZE;
@@ -148,7 +147,7 @@ public class Chunk {
             if (neighborElectronHeads > 2) return;  // Only up to 2 neighbor heads allowed for multiplication
         }
         
-        sw = (haveSouthEast ? (overSouth && overWest ? adjacentSW.getRaw(CHUNK_SIZE - 1, 0) : getRaw(x - 1, y + 1)) : 0x00);
+        sw = (haveSouthWest ? (overSouth && overWest ? adjacentSW.getRaw(CHUNK_SIZE - 1, 0) : getRaw(x - 1, y + 1)) : 0x00);
         if (sw == 0x01) {
             neighborElectronHeads ++;
             if (neighborElectronHeads > 2) return;  // Only up to 2 neighbor heads allowed for multiplication
@@ -168,20 +167,16 @@ public class Chunk {
         back = tmp;
     }
     
-    public void reset() {
+    public void reset(boolean swap) {
         for (int index = 0; index < AREA; index ++) {
             if (front[index] == 0x01 || front[index] == 0x02) front[index] = 0x03;
             back[index] = front[index];
         }
     }
     
-    public Optional<TileType> get(byte x, byte y) {
-        return TileType.getType(getRaw(x, y));
-    }
-    
-    private byte getRaw(int x, int y) {
+    public byte getRaw(int x, int y) {
         int at = y * CHUNK_SIZE + x;
-        if (at < 0 || at >= AREA) return 0x00;
+        if (at < 0 || at >= AREA) return -0x01;
         return front[at];
     }
     
@@ -193,27 +188,28 @@ public class Chunk {
         return new Vector2i(chunkPos).mul(CHUNK_SIZE);
     }
     
-    public void render() {
+    public void render(IRenderFunction renderFunction) {
+        Vector2i worldPos = getWorldPos();
+        int worldX = worldPos.x;
+        int worldY = worldPos.y;
+        // TODO: DEBUG
+        Render.strokeRect(worldX, worldY, CHUNK_SIZE, CHUNK_SIZE, new Vector3d(0.5d, 0.5d, 0.5d), 1.0d / Render.getZoom());
         for (byte y = 0; y < CHUNK_SIZE; y ++) {
             for (byte x = 0; x < CHUNK_SIZE; x++) {
                 switch (getRaw(x, y)) {
                     case 0x00: break;
                     case 0x01:
-                        add(x, y, COLOR_ELECTRON_HEAD);
+                        renderFunction.render(worldX + x, worldY + y, COLOR_ELECTRON_HEAD);
                         break;
                     case 0x02:
-                        add(x, y, COLOR_ELECTRON_TAIL);
+                        renderFunction.render(worldX + x, worldY + y, COLOR_ELECTRON_TAIL);
                         break;
                     case 0x03:
-                        add(x, y, COLOR_CONDUCTOR);
+                        renderFunction.render(worldX + x, worldY + y, COLOR_CONDUCTOR);
                         break;
                 }
             }
         }
-    }
-    
-    private void add(byte x, byte y, Vector3d color) {
-        Render.fillRect(x, y, 1.0d, 1.0d, color);
     }
     
     private static int getIndexRaw(byte x, byte y) {
@@ -226,27 +222,6 @@ public class Chunk {
     
     private static boolean valid(byte x, byte y) {
         return (x >= 0 && y >= 0 && x < CHUNK_SIZE && y < CHUNK_SIZE);
-    }
-    
-    public enum TileType {
-        EMPTY(0x00),
-        ELECTRON_HEAD(0x01),
-        ELECTRON_TAIL(0x02),
-        CONDUCTOR(0x03);
-        
-        public final byte type;
-        TileType(int type) {
-            this.type = (byte) type;
-        }
-        public static Optional<TileType> getType(byte type) {
-            switch (type) {
-                case 0x00: return Optional.of(EMPTY);
-                case 0x01: return Optional.of(ELECTRON_HEAD);
-                case 0x02: return Optional.of(ELECTRON_TAIL);
-                case 0x03: return Optional.of(CONDUCTOR);
-                default: return Optional.empty();
-            }
-        }
     }
     
 }

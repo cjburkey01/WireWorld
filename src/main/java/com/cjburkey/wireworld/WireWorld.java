@@ -1,24 +1,26 @@
 package com.cjburkey.wireworld;
 
-import com.cjburkey.wireworld.world.Chunk;
-import com.cjburkey.wireworld.world.World;
+import com.cjburkey.jautomata.world.World;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.joml.Vector2d;
+import org.joml.Vector2dc;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 
 /**
  * Created by CJ Burkey on 2018/11/25
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess", "MismatchedQueryAndUpdateOfCollection"})
 public final class WireWorld extends Application {
     
     private Stage stage;
@@ -37,10 +39,12 @@ public final class WireWorld extends Application {
     // Input
     private final ObjectOpenHashSet<KeyCode> keysDown = new ObjectOpenHashSet<>();
     private final ObjectOpenHashSet<KeyCode> keysFresh = new ObjectOpenHashSet<>();
+    private final ObjectOpenHashSet<MouseButton> mouseDown = new ObjectOpenHashSet<>();
+    private final ObjectOpenHashSet<MouseButton> mouseFresh = new ObjectOpenHashSet<>();
+    private final Vector2d mousePos = new Vector2d();
     private final Vector2d prevMouse = new Vector2d();
     private final Vector2d mouseDelta = new Vector2d();
     private double zoom = 0.0d;
-    private boolean movingWithMouse = false;
     
     public static void main(String[] args) {
         launch(args);
@@ -61,7 +65,7 @@ public final class WireWorld extends Application {
         canvas.widthProperty().bind(root.widthProperty());
         canvas.heightProperty().bind(root.heightProperty());
         Render.setCanvas(canvas);
-        Render.zoom = 50.0d;
+        Render.setZoom(50.0d);
         loop.start();
         stage.show();
         stage.centerOnScreen();
@@ -73,52 +77,50 @@ public final class WireWorld extends Application {
             keysFresh.add(e.getCode());
         });
         canvas.setOnKeyReleased(e -> keysDown.remove(e.getCode()));
-        canvas.setOnScroll(e -> zoom += e.getDeltaY() * Render.zoom / zoomSlow);
+        canvas.setOnScroll(e -> zoom += e.getDeltaY() * Render.getZoom() / zoomSlow);
         canvas.setOnMousePressed(e -> {
-            if (e.getButton().equals(MouseButton.MIDDLE)) {
-                movingWithMouse = true;
-            }
+            mouseDown.add(e.getButton());
+            mouseFresh.add(e.getButton());
         });
-        canvas.setOnMouseReleased(e -> {
-            if (e.getButton().equals(MouseButton.MIDDLE)) movingWithMouse = false;
-        });
-        canvas.setOnMouseMoved(e -> {
-            mouseDelta.set(e.getX() - prevMouse.x, e.getY() - prevMouse.y);
-            prevMouse.set(e.getX(), e.getY());
-            if (movingWithMouse) {
-                Render.offset.add(mouseDelta.mul(1.0d / Render.zoom, new Vector2d()));
-            }
-        });
-        canvas.setOnMouseDragged(e -> {
-            mouseDelta.set(e.getX() - prevMouse.x, e.getY() - prevMouse.y);
-            prevMouse.set(e.getX(), e.getY());
-            if (movingWithMouse) {
-                Render.offset.add(mouseDelta.mul(1.0d / Render.zoom, new Vector2d()));
-            }
-        });
+        canvas.setOnMouseReleased(e -> mouseDown.remove(e.getButton()));
+        EventHandler<? super MouseEvent> mm = e -> {
+            mousePos.set(e.getX(), e.getY());
+            mousePos.sub(prevMouse, mouseDelta);
+        };
+        canvas.setOnMouseMoved(mm);
+        canvas.setOnMouseDragged(mm);
         
-        world.setTile(new Vector2i(), Chunk.TileType.CONDUCTOR);
+        world.setTile(new Vector2i(0, 0), (byte) 0x03);
     }
     
     private void handleInput(double deltaTime) {
-        if (keysDown.contains(KeyCode.W) || keysDown.contains(KeyCode.UP)) Render.offset.y += moveSpeed / Render.zoom * deltaTime;
-        if (keysDown.contains(KeyCode.S) || keysDown.contains(KeyCode.DOWN)) Render.offset.y -= moveSpeed / Render.zoom * deltaTime;
-        if (keysDown.contains(KeyCode.D) || keysDown.contains(KeyCode.RIGHT)) Render.offset.x -= moveSpeed / Render.zoom * deltaTime;
-        if (keysDown.contains(KeyCode.A) || keysDown.contains(KeyCode.LEFT)) Render.offset.x += moveSpeed / Render.zoom * deltaTime;
+        if (mouseDown.contains(MouseButton.MIDDLE)) Render.offset.add(mouseDelta.mul(1.0d / Render.getZoom(), new Vector2d()));
         
-        Render.zoom += zoom;
+        if (keysDown.contains(KeyCode.W) || keysDown.contains(KeyCode.UP)) Render.offset.y += moveSpeed / Render.getZoom() * deltaTime;
+        if (keysDown.contains(KeyCode.S) || keysDown.contains(KeyCode.DOWN)) Render.offset.y -= moveSpeed / Render.getZoom() * deltaTime;
+        if (keysDown.contains(KeyCode.D) || keysDown.contains(KeyCode.RIGHT)) Render.offset.x -= moveSpeed / Render.getZoom() * deltaTime;
+        if (keysDown.contains(KeyCode.A) || keysDown.contains(KeyCode.LEFT)) Render.offset.x += moveSpeed / Render.getZoom() * deltaTime;
+        
+        if (zoom != 0.0d) {
+            Vector2dc before = Render.transformPoint(mousePos);
+            Render.setZoom(Render.getZoom() + zoom);
+            Render.offset.add(Render.transformPoint(mousePos).sub(before));
+        }
     }
     
     private void render(double deltaTime) {
         handleInput(deltaTime);
         keysFresh.clear();
+        mouseFresh.clear();
         zoom = 0.0d;
+        mouseDelta.set(0.0d);
+        prevMouse.set(mousePos);
         
         stage.setTitle(String.format("CJ Burkey's WireWorld 0.0.1 | Avg. FPS: %.2f", 1.0d / deltaTime));
         Render.clear(new Vector3d(0.078d, 0.078d, 0.078d));
         
         Render.applyTransformation();
-        world.getChunk(new Vector2i()).ifPresent(Chunk::render);
+        world.render((x, y, color) -> Render.fillRect(x, y, 1.0d, 1.0d, color));
         Render.removeTransformation();
     }
     
