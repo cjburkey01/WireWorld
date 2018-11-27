@@ -10,7 +10,12 @@ import org.joml.Vector3dc;
 public interface IAutomataHandler {
     
     byte process(Chunk chunk, byte tileType, int dataIndex, byte x, byte y);
-    Byte2ObjectArrayMap<Vector3dc> getColorMap();
     byte getResetTile(byte input);
+    Byte2ObjectArrayMap<Vector3dc> getColorMap();
+    byte getTileCount();
+    byte[] getTiles();
+    
+    @SuppressWarnings("unused")
+    String[] getTileNames();
     
 }

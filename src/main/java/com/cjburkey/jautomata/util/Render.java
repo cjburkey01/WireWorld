@@ -7,7 +7,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.StrokeType;
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
 import org.joml.Vector3dc;
@@ -140,11 +139,11 @@ public final class Render {
     }
     
     public static Vector2d transformPoint(Vector2dc input) {
-        return input.sub(halfCanvasSize, new Vector2d()).mul(1.0d / zoom).sub(offset);
+        return input.sub(halfCanvasSize, new Vector2d()).mul(1.0d / zoom).sub(offset).sub(0.5d, 0.5d);
     }
     
     public static Vector2d deTransformPoint(Vector2dc input) {
-        return input.add(offset, new Vector2d()).mul(zoom).add(halfCanvasSize);
+        return input.add(0.5d, 0.5d, new Vector2d()).add(offset).mul(zoom).add(halfCanvasSize);
     }
     
     public static boolean getIsOnScreen(Vector2dc point, double squareWidth) {
@@ -174,12 +173,12 @@ public final class Render {
     
     // -- STATE MANAGEMENT -- //
     
-    private static double coord(double input) {
-        return Helpers.floor(input) + 0.5d;
+    private static double coord(double a) {
+        return Helpers.floor(a) + 0.5d;
     }
     
-    private static Vector2d coord(Vector2dc input) {
-        return input.floor(new Vector2d()).add(0.5d, 0.5d);
+    private static Vector2d coord(Vector2dc a) {
+        return a.floor(new Vector2d()).add(0.5d, 0.5d);
     }
     
     private static void setFill(Vector3dc fill) {

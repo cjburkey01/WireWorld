@@ -19,10 +19,11 @@ public abstract class AutomataProvider {
         if (automata != null) automata.exit();
     }
     
+    // Don't instantiate the class in here; it may be called more than once
     public abstract IAutomataHandler getHandler();
     
     // Returns false to allow default input handling
-    public boolean handleExtraInput(Input input) {
+    public boolean handleExtraInput(Input input, double deltaTime) {
         return false;
     }
     

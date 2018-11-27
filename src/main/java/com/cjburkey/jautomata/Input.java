@@ -9,12 +9,15 @@ import org.joml.Vector2dc;
 /**
  * Created by CJ Burkey on 2018/11/26
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Input {
     
     final ObjectOpenHashSet<KeyCode> keysDown = new ObjectOpenHashSet<>();
     final ObjectOpenHashSet<KeyCode> keysFresh = new ObjectOpenHashSet<>();
+    final ObjectOpenHashSet<KeyCode> keysFreshUp = new ObjectOpenHashSet<>();
     final ObjectOpenHashSet<MouseButton> mouseDown = new ObjectOpenHashSet<>();
     final ObjectOpenHashSet<MouseButton> mouseFresh = new ObjectOpenHashSet<>();
+    final ObjectOpenHashSet<MouseButton> mouseFreshUp = new ObjectOpenHashSet<>();
     final Vector2d mousePos = new Vector2d();
     final Vector2d prevMouse = new Vector2d();
     final Vector2d mouseDelta = new Vector2d();
@@ -28,12 +31,20 @@ public class Input {
         return keysFresh.contains(key);
     }
     
+    public boolean isKeyJustUp(KeyCode key) {
+        return keysFreshUp.contains(key);
+    }
+    
     public boolean isMouseDown(MouseButton key) {
         return mouseDown.contains(key);
     }
     
     public boolean isMouseJustDown(MouseButton key) {
         return mouseFresh.contains(key);
+    }
+    
+    public boolean isMouseJustUp(MouseButton key) {
+        return mouseFreshUp.contains(key);
     }
     
     public Vector2dc getMousePos() {
@@ -54,7 +65,9 @@ public class Input {
     
     void reset() {
         keysFresh.clear();
+        keysFreshUp.clear();
         mouseFresh.clear();
+        mouseFreshUp.clear();
         prevMouse.set(mousePos);
         mouseDelta.set(0.0d);
         scroll = 0.0d;

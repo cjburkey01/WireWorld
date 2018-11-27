@@ -42,6 +42,7 @@ public class AutomataHandler {
         if (reset) {
             reset = false;
             world.reset();
+            world.tick();
         }
         
         long start = System.nanoTime();

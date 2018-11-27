@@ -3,6 +3,7 @@ package com.cjburkey.wireworld;
 import com.cjburkey.jautomata.AutomataProvider;
 import com.cjburkey.jautomata.IAutomataHandler;
 import com.cjburkey.jautomata.Input;
+import com.cjburkey.jautomata.util.TimeDebug;
 import javafx.scene.input.KeyCode;
 import org.joml.Vector2i;
 
@@ -12,6 +13,10 @@ import org.joml.Vector2i;
 public class AutomataWireWorld extends AutomataProvider {
     
     private final AutomataWireWorldHandler handler = new AutomataWireWorldHandler();
+    
+    static {
+        TimeDebug.enabled = false;
+    }
     
     public IAutomataHandler getHandler() {
         return handler;
@@ -35,12 +40,13 @@ public class AutomataWireWorld extends AutomataProvider {
         getAutomata().automataWorld.setTile(new Vector2i(), (byte) 0x01, true);
     }
     
-    public boolean handleExtraInput(Input input) {
+    public boolean handleExtraInput(Input input, double delta) {
         if (input.isKeyJustDown(KeyCode.ESCAPE)) exit();
         if (input.isKeyJustDown(KeyCode.T)) getAutomata().singleTick();
         if (input.isKeyJustDown(KeyCode.L)) getAutomata().startTickLoop();
         if (input.isKeyJustDown(KeyCode.E)) getAutomata().stopTickLoop();
         if (input.isKeyJustDown(KeyCode.R)) getAutomata().reset();
+        
         return false;
     }
     

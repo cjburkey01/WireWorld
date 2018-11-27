@@ -59,13 +59,25 @@ public class AutomataWireWorldHandler implements IAutomataHandler {
         return 0x01;
     }
     
-    public Byte2ObjectArrayMap<Vector3dc> getColorMap() {
-        return colorMap;
-    }
-    
     public byte getResetTile(byte input) {
         if (input == 0x01 || input == 0x02) return 0x03;
         return input;
+    }
+    
+    public Byte2ObjectArrayMap<Vector3dc> getColorMap() {
+        return colorMap;
+    }
+
+    public byte getTileCount() {
+        return 3;
+    }
+    
+    public byte[] getTiles() {
+        return new byte[] { 0x01, 0x02, 0x03 };
+    }
+    
+    public String[] getTileNames() {
+        return new String[] { "Electron head", "Electron tail", "Conductor" };
     }
     
 }
