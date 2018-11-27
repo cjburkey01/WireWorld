@@ -7,6 +7,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.StrokeType;
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
 import org.joml.Vector3dc;
@@ -55,28 +56,31 @@ public final class Render {
     
     public static void fillRect(double x, double y, double w, double h, Vector3dc fill) {
         setFill(fill);
-        octx.ifPresent(ctx -> ctx.fillRect(x, y, w, h));
+        octx.ifPresent(ctx -> ctx.fillRect(coord(x), coord(y), w, h));
     }
     
     public static void fillRect(Vector2dc pos, Vector2dc size, Vector3dc fill) {
+        pos = coord(pos);
         fillRect(pos.x(), pos.y(), size.x(), size.y(), fill);
     }
     
     public static void strokeRect(double x, double y, double w, double h, Vector3dc stroke, double strokeWidth) {
         setStroke(stroke, strokeWidth);
-        octx.ifPresent(ctx -> ctx.strokeRect(x, y, w, h));
+        octx.ifPresent(ctx -> ctx.strokeRect(coord(x), coord(y), w, h));
     }
     
     public static void strokeRect(Vector2dc pos, Vector2dc size, Vector3dc stroke, double strokeWidth) {
+        pos = coord(pos);
         strokeRect(pos.x(), pos.y(), size.x(), size.y(), stroke, strokeWidth);
     }
     
     public static void fillAndStrokeRect(double x, double y, double w, double h, Vector3dc fill, Vector3dc stroke, double strokeWidth) {
-        fillRect(x, y, w, h, fill);
-        strokeRect(x, y, w, h, stroke, strokeWidth);
+        fillRect(coord(x), coord(y), w, h, fill);
+        strokeRect(coord(x), coord(y), w, h, stroke, strokeWidth);
     }
     
     public static void fillAndStrokeRect(Vector2dc pos, Vector2dc size, Vector3dc fill, Vector3dc stroke, double strokeWidth) {
+        pos = coord(pos);
         fillAndStrokeRect(pos.x(), pos.y(), size.x(), size.y(), fill, stroke, strokeWidth);
     }
     
@@ -84,28 +88,31 @@ public final class Render {
     
     public static void fillOval(double x, double y, double w, double h, Vector3dc fill) {
         setFill(fill);
-        octx.ifPresent(ctx -> ctx.fillOval(x, y, w, h));
+        octx.ifPresent(ctx -> ctx.fillOval(coord(x), coord(y), w, h));
     }
     
     public static void fillOval(Vector2dc pos, Vector2dc size, Vector3dc fill) {
+        pos = coord(pos);
         fillOval(pos.x(), pos.y(), size.x(), size.y(), fill);
     }
     
     public static void strokeOval(double x, double y, double w, double h, Vector3dc stroke, double lineWidth) {
         setStroke(stroke, lineWidth);
-        octx.ifPresent(ctx -> ctx.fillOval(x, y, w, h));
+        octx.ifPresent(ctx -> ctx.fillOval(coord(x), coord(y), w, h));
     }
     
     public static void strokeOval(Vector2dc pos, Vector2dc size, Vector3dc stroke, double lineWidth) {
+        pos = coord(pos);
         strokeOval(pos.x(), pos.y(), size.x(), size.y(), stroke, lineWidth);
     }
     
     public static void fillAndStrokeOval(double x, double y, double w, double h, Vector3dc fill, Vector3dc stroke, double lineWidth) {
-        fillOval(x, y, w, h, fill);
-        strokeOval(x, y, w, h, stroke, lineWidth);
+        fillOval(coord(x), coord(y), w, h, fill);
+        strokeOval(coord(x), coord(y), w, h, stroke, lineWidth);
     }
     
     public static void fillAndStrokeOval(Vector2dc pos, Vector2dc size, Vector3dc fill, Vector3dc stroke, double lineWidth) {
+        pos = coord(pos);
         fillAndStrokeOval(pos.x(), pos.y(), size.x(), size.y(), fill, stroke, lineWidth);
     }
     
@@ -113,10 +120,12 @@ public final class Render {
     
     public static void strokeLine(double x1, double y1, double x2, double y2, Vector3dc stroke, double lineWidth) {
         setStroke(stroke, lineWidth);
-        octx.ifPresent(ctx -> ctx.strokeLine(x1, y1, x2, y2));
+        octx.ifPresent(ctx -> ctx.strokeLine(coord(x1), coord(y1), coord(x2), coord(y2)));
     }
     
     public static void strokeLine(Vector2dc pos1, Vector2dc pos2, Vector3dc stroke, double lineWidth) {
+        pos1 = coord(pos1);
+        pos2 = coord(pos2);
         strokeLine(pos1.x(), pos1.y(), pos2.x(), pos2.y(), stroke, lineWidth);
     }
     
@@ -164,6 +173,14 @@ public final class Render {
     }
     
     // -- STATE MANAGEMENT -- //
+    
+    private static double coord(double input) {
+        return Helpers.floor(input) + 0.5d;
+    }
+    
+    private static Vector2d coord(Vector2dc input) {
+        return input.floor(new Vector2d()).add(0.5d, 0.5d);
+    }
     
     private static void setFill(Vector3dc fill) {
         octx.ifPresent(ctx -> {

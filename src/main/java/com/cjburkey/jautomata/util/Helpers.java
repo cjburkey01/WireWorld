@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * Created by CJ Burkey on 2018/11/25
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Helpers {
     
     public static byte min(byte a, byte b) {
@@ -96,6 +96,14 @@ public class Helpers {
     
     public static int rand(Random random, int minInc, int maxInc) {
         return minInc + random.nextInt(maxInc - minInc + 1);
+    }
+    
+    public static float floor(float a) {
+        return (float) Math.floor(a);
+    }
+    
+    public static double floor(double a) {
+        return Math.floor(a);
     }
     
 }

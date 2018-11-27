@@ -15,21 +15,22 @@ public class AdjacentChunks {
     public Chunk adjacentE = null;
     public Chunk adjacentW = null;
     
-    public Chunk getNeighbor(int xDiff, int yDiff) {
-        if (yDiff == -1) {
-            if (xDiff == -1) return adjacentNW;
-            if (xDiff == 1) return adjacentNE;
+    public Chunk getChunkFromOffset(int ix, int iy) {
+        int x = Integer.compare(ix, 0); // Essentially a 'sign' function
+        int y = Integer.compare(iy, 0);
+        if (y == -1) {
+            if (x == -1) return adjacentNW;
+            if (x == 1) return adjacentNE;
             return adjacentN;
         }
-        if (yDiff == 0) {
-            if (xDiff == -1) return adjacentW;
-            if (xDiff == 1) return adjacentE;
-            return null;
-        }
-        if (yDiff == 1) {
-            if (xDiff == -1) return adjacentSW;
-            if (xDiff == 1) return adjacentSE;
+        if (y == 1) {
+            if (x == -1) return adjacentSW;
+            if (x == 1) return adjacentSE;
             return adjacentS;
+        }
+        if (y == 0) {
+            if (x == -1) return adjacentW;
+            if (x == 1) return adjacentE;
         }
         return null;
     }

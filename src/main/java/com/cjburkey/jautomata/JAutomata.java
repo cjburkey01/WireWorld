@@ -1,6 +1,7 @@
 package com.cjburkey.jautomata;
 
 import com.cjburkey.jautomata.util.Render;
+import com.cjburkey.jautomata.util.TimeDebug;
 import com.cjburkey.jautomata.world.AutomataHandler;
 import com.cjburkey.jautomata.world.AutomataWorld;
 import javafx.animation.AnimationTimer;
@@ -16,7 +17,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
-import org.joml.Vector2i;
 import org.joml.Vector3d;
 
 /**
@@ -146,6 +146,8 @@ public final class JAutomata extends Application {
         Render.applyTransformation();
         automataWorld.render(Render::fillRect);
         Render.removeTransformation();
+        
+        TimeDebug.finishAndPrintAll();
     }
     
     public Canvas getCanvas() {

@@ -3,11 +3,8 @@ package com.cjburkey.wireworld;
 import com.cjburkey.jautomata.AutomataProvider;
 import com.cjburkey.jautomata.IAutomataHandler;
 import com.cjburkey.jautomata.Input;
-import java.util.Random;
 import javafx.scene.input.KeyCode;
 import org.joml.Vector2i;
-
-import static com.cjburkey.jautomata.util.Helpers.*;
 
 /**
  * Created by CJ Burkey on 2018/11/26

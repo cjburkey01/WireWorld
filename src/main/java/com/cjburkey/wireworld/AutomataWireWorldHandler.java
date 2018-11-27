@@ -1,12 +1,9 @@
 package com.cjburkey.wireworld;
 
-import com.cjburkey.jautomata.util.Helpers;
-import com.cjburkey.jautomata.world.AdjacentChunks;
-import com.cjburkey.jautomata.world.AutomataWorld;
-import com.cjburkey.jautomata.world.Chunk;
 import com.cjburkey.jautomata.IAutomataHandler;
+import com.cjburkey.jautomata.util.Helpers;
+import com.cjburkey.jautomata.world.Chunk;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
-import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
@@ -31,28 +28,26 @@ public class AutomataWireWorldHandler implements IAutomataHandler {
             case 0x00: return 0x00;                             // Empty -> Empty
             case 0x01: return 0x02;                             // Electron Head -> Electron Tail
             case 0x02: return 0x03;                             // Electron Tail -> Conductor
-            case 0x03: return processConductor(chunk, x, y);    // Conductor ->? Electron Head
+            case 0x03: return processConductorNew(chunk, x, y); // Conductor ->? Electron Head
             default: return 0x00;
         }
     }
     
-    private byte processConductor(Chunk chunk, byte x, byte y) {
+    private byte processConductorNew(Chunk chunk, byte ix, byte iy) {
         int neighborElectronHeads = 0;
         
-        // TODO: MAKE THIS WORK; IT DOESN'T WORK RIGHT NOW
-        for (int px = x - 1; px <= x + 1; px ++) {
-            for (int py = y - 1; py <= y + 1; py ++) {
-                if (px == x && py == y) continue;
-                int posDiffX = Helpers.div(px, CHUNK_SIZE);
-                int posDiffY = Helpers.div(py, CHUNK_SIZE);
-                if (posDiffX != 0 && posDiffY != 0) {
-                    Chunk neighbor = chunk.adjacentChunks.getNeighbor(posDiffX, posDiffY);
-                    if (neighbor == null) continue;
-                    if (neighbor.getRaw(Helpers.mod(px, CHUNK_SIZE), Helpers.mod(py, CHUNK_SIZE)) == 0x01) neighborElectronHeads ++;
+        for (int x = ix - 1; x <= ix + 1; x ++) {
+            for (int y = iy - 1; y <= iy + 1; y ++) {
+                int chunkOffsetX = Helpers.div(x, CHUNK_SIZE);
+                int chunkOffsetY = Helpers.div(y, CHUNK_SIZE);
+                if (chunkOffsetX == 0 && chunkOffsetY == 0) {
+                    if (chunk.getRaw(x, y) == 0x01) neighborElectronHeads ++;
                 } else {
-                    if (chunk.getRaw(px, py) == 0x01) neighborElectronHeads ++;
+                    Chunk nChunk = chunk.adjacentChunks.getChunkFromOffset(chunkOffsetX, chunkOffsetY);
+                    if (nChunk != null && nChunk.getRaw(Helpers.mod(x, CHUNK_SIZE), Helpers.mod(y, CHUNK_SIZE)) == 0x01) neighborElectronHeads ++;
                 }
-                // If there are more than two neighboring electron heads, remain a conductor
+                
+                // If there are more than two adjacent electron heads, remain a conductor
                 if (neighborElectronHeads > 2) return 0x03;
             }
         }

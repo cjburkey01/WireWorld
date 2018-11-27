@@ -2,6 +2,7 @@ package com.cjburkey.jautomata.world;
 
 import com.cjburkey.jautomata.IAutomataHandler;
 import com.cjburkey.jautomata.util.Render;
+import com.cjburkey.jautomata.util.TimeDebug;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import org.joml.Vector2d;
 import org.joml.Vector2i;
@@ -65,9 +66,13 @@ public class Chunk {
         int index = 0;
         for (byte y = 0; y < CHUNK_SIZE; y++) {
             for (byte x = 0; x < CHUNK_SIZE; x++) {
+                TimeDebug.start("chunk.render.colorMapGet");
                 Vector3dc color = colorMap.get(front[index]);
+                TimeDebug.pause("chunk.render.colorMapGet");
+                TimeDebug.start("chunk.render.render");
                 if (color != null) renderFunction.render(worldX + x, worldY + y, 1, 1, color);
-                index++;
+                TimeDebug.pause("chunk.render.render");
+                index ++;
             }
         }
         return true;
