@@ -1,4 +1,4 @@
-package com.cjburkey.wireworld;
+package com.cjburkey.jautomata.util;
 
 import com.sun.istack.internal.Nullable;
 import java.util.Optional;
@@ -132,6 +132,19 @@ public final class Render {
     
     public static Vector2d transformPoint(Vector2dc input) {
         return input.sub(halfCanvasSize, new Vector2d()).mul(1.0d / zoom).sub(offset);
+    }
+    
+    public static Vector2d deTransformPoint(Vector2dc input) {
+        return input.add(offset, new Vector2d()).mul(zoom).add(halfCanvasSize);
+    }
+    
+    public static boolean getIsOnScreen(Vector2dc point, double squareWidth) {
+        double rsq = (squareWidth * squareWidth);
+        Vector2d at = deTransformPoint(point);
+        double x = Math.signum(at.x) * at.x * at.x;
+        double y = Math.signum(at.y) * at.y * at.y;
+        double a = zoom * zoom * rsq;
+        return (x > -a) && (y > -a) && (x < canvasSize.x * canvasSize.x) && (y < canvasSize.y * canvasSize.y);
     }
     
     public static void applyTransformation() {

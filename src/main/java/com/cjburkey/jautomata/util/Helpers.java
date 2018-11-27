@@ -1,10 +1,12 @@
-package com.cjburkey.wireworld;
+package com.cjburkey.jautomata.util;
+
+import java.util.Random;
 
 /**
  * Created by CJ Burkey on 2018/11/25
  */
 @SuppressWarnings("unused")
-public class Util {
+public class Helpers {
     
     public static byte min(byte a, byte b) {
         return a > b ? b : a;
@@ -54,6 +56,10 @@ public class Util {
         return a <= b ? b : a;
     }
     
+    public static int div(int a, int b) {
+        return Math.floorDiv(a, b);
+    }
+    
     public static byte mod(byte a, byte b) {
         return (byte) Math.floorMod(a, b);
     }
@@ -78,6 +84,18 @@ public class Util {
     // Not necessary
     public static double mod(double a, double b) {
         return a % b;
+    }
+    
+    public static byte rand(Random random, byte minInc, byte maxInc) {
+        return (byte) (minInc + random.nextInt(maxInc - minInc + 1));
+    }
+    
+    public static short rand(Random random, short minInc, short maxInc) {
+        return (short) (minInc + random.nextInt(maxInc - minInc + 1));
+    }
+    
+    public static int rand(Random random, int minInc, int maxInc) {
+        return minInc + random.nextInt(maxInc - minInc + 1);
     }
     
 }
